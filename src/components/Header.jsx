@@ -1,6 +1,6 @@
 const STEPS = ['입력', '분석', '보완', '계약서', '요청서'];
 
-export default function Header({ step, onStepClick, useAI, onToggleAI }) {
+export default function Header({ step, onStepClick, useAI, onToggleAI, onMenuClick, onSettingsClick, hasApiKey }) {
   return (
     <header style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -9,12 +9,23 @@ export default function Header({ step, onStepClick, useAI, onToggleAI }) {
       borderBottom: '0.5px solid var(--border-default)',
       position: 'sticky', top: 0, zIndex: 100,
     }}>
-      {/* Logo */}
+      {/* Logo + hamburger */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <rect width="24" height="24" rx="5" fill="var(--accent)" />
-          <path d="M6 7h12M6 11h9M6 15h10M6 19h7" stroke="var(--text-inverted)" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        <button
+          onClick={onMenuClick}
+          title="메뉴"
+          style={{
+            width: '32px', height: '32px', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: '4px',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            borderRadius: 'var(--radius-sm)', padding: '4px',
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ display: 'block', width: '16px', height: '1.5px', background: 'var(--text-primary)', borderRadius: '1px' }} />
+          <span style={{ display: 'block', width: '16px', height: '1.5px', background: 'var(--text-primary)', borderRadius: '1px' }} />
+          <span style={{ display: 'block', width: '12px', height: '1.5px', background: 'var(--text-primary)', borderRadius: '1px', alignSelf: 'flex-start' }} />
+        </button>
         <div>
           <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '-0.01em' }}>
             Contract Intake Navigator
@@ -63,6 +74,26 @@ export default function Header({ step, onStepClick, useAI, onToggleAI }) {
             );
           })}
         </div>
+
+        {/* Settings button */}
+        <button
+          onClick={onSettingsClick}
+          title="API 키 설정"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '5px 11px', borderRadius: '20px', cursor: 'pointer',
+            background: 'var(--bg-muted)',
+            border: `0.5px solid ${hasApiKey ? 'var(--success-border)' : 'var(--border-default)'}`,
+            color: hasApiKey ? 'var(--success-text)' : 'var(--text-secondary)',
+            fontSize: '11px', fontWeight: 500,
+          }}
+        >
+          <span style={{
+            width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0,
+            background: hasApiKey ? 'var(--success-text)' : 'var(--border-strong)',
+          }} />
+          {hasApiKey ? 'API 연결됨' : 'API 키 설정'}
+        </button>
 
         {/* AI toggle */}
         <div style={{
