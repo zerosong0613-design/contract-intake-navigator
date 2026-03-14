@@ -1,5 +1,22 @@
 // 표준계약서 추천 데이터
-// 실제 운용 시 파일 경로(linkedPath)를 SharePoint/사내 문서함 URL로 교체하세요.
+//
+// 파일 링크 설정 방법:
+//   .env.local (로컬) 또는 Vercel 환경변수에 VITE_TEMPLATE_BASE_URL 을 설정하세요.
+//   예: VITE_TEMPLATE_BASE_URL=https://yourcompany.sharepoint.com/sites/legal/templates
+//
+//   설정 시 각 계약서는 {VITE_TEMPLATE_BASE_URL}/{code} 형식으로 링크됩니다.
+//   미설정 시 파일 열기 버튼이 비활성화됩니다.
+
+/**
+ * 환경변수 기반 템플릿 URL 빌더
+ * @param {string} code - 템플릿 코드 (예: 'NDA-BI')
+ * @returns {string|null} URL 또는 null(미설정)
+ */
+export function getTemplateUrl(code) {
+  const base = import.meta.env.VITE_TEMPLATE_BASE_URL || '';
+  if (!base || base === 'your_sharepoint_url_here') return null;
+  return `${base.replace(/\/$/, '')}/${code}`;
+}
 
 export const TEMPLATES = {
   NDA: [
@@ -16,7 +33,6 @@ export const TEMPLATES = {
         '비밀정보 정의에 구두 정보 포함 여부 확인',
         '계약 종료 후 자료 반환/폐기 조항 확인',
       ],
-      linkedPath: '#',
     },
     {
       code: 'NDA-UNI-D',
@@ -29,7 +45,6 @@ export const TEMPLATES = {
         '비밀정보 표시 의무(서면 표시) 조항 확인',
         '반환 청구권 조항 삽입 권장',
       ],
-      linkedPath: '#',
     },
     {
       code: 'NDA-UNI-R',
@@ -42,7 +57,6 @@ export const TEMPLATES = {
         '당사 책임 범위 과도 확대 여부 확인',
         '예외정보(공지된 정보 등) 범위 검토',
       ],
-      linkedPath: '#',
     },
   ],
 
@@ -59,7 +73,6 @@ export const TEMPLATES = {
         '하자보증 기간 및 보증 범위 확인',
         '대금 지급 조건 및 지연이자 조항',
       ],
-      linkedPath: '#',
     },
     {
       code: 'SUP-F',
@@ -73,7 +86,6 @@ export const TEMPLATES = {
         '단가 조정 조항 (원자재 변동 등)',
         '최소발주수량 조항 협상',
       ],
-      linkedPath: '#',
     },
   ],
 
@@ -91,7 +103,6 @@ export const TEMPLATES = {
         '재위탁 허용 여부 및 범위 명시',
         '지연 납품 위약금 조항',
       ],
-      linkedPath: '#',
     },
     {
       code: 'SVC-S',
@@ -105,7 +116,6 @@ export const TEMPLATES = {
         '업무 지휘·감독 구조 명확화',
         '4대보험 처리 주체 확인',
       ],
-      linkedPath: '#',
     },
   ],
 
@@ -124,7 +134,6 @@ export const TEMPLATES = {
         '개발 결과물 이용 범위 및 제3자 실시권',
         'NDA 동시 체결 권장',
       ],
-      linkedPath: '#',
     },
   ],
 
@@ -142,7 +151,6 @@ export const TEMPLATES = {
         '실시 범위(제품, 지역, 기간) 제한',
         '서브라이선스 허용 여부',
       ],
-      linkedPath: '#',
     },
   ],
 
@@ -160,7 +168,6 @@ export const TEMPLATES = {
         '계약 종료 후 자산 반환 절차',
         '개인정보 처리 위탁 포함 시 별도 개인정보처리위탁계약서 필요',
       ],
-      linkedPath: '#',
     },
   ],
 
@@ -176,7 +183,6 @@ export const TEMPLATES = {
         '요청서에 거래 목적 및 구조를 최대한 상세히 기재',
         '상대방 계약서가 있는 경우 첨부 필요',
       ],
-      linkedPath: '#',
     },
   ],
 };

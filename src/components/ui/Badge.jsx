@@ -11,8 +11,8 @@ export default function Badge({ children, variant = 'default', style }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
-      padding: '2px 7px', borderRadius: '4px',
-      fontSize: '11px', fontWeight: 500, whiteSpace: 'nowrap',
+      padding: '2px 8px', borderRadius: '4px',
+      fontSize: '12px', fontWeight: 500, whiteSpace: 'nowrap',  /* 11px → 12px */
       background: c.bg, color: c.color,
       border: `0.5px solid ${c.border}`,
       ...style,

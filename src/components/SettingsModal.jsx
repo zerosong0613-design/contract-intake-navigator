@@ -3,6 +3,26 @@ import Button from './ui/Button.jsx';
 
 const STORAGE_KEY = 'cin_api_key';
 
+// Vercel Edge Function(/api/analyze) 서버 키 설정 여부를 런타임에 확인
+// 503 + SERVER_KEY_NOT_CONFIGURED 응답이면 미설정으로 판단
+async function checkEdgeFunction() {
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: '__ping__' }),
+    });
+    if (res.status === 503) {
+      const body = await res.json().catch(() => ({}));
+      return body?.error !== 'SERVER_KEY_NOT_CONFIGURED'; // 키는 있지만 다른 이유 503이면 true
+    }
+    // 400(짧은 텍스트 오류)도 서버 키가 있다는 의미
+    return res.status !== 404;
+  } catch {
+    return false; // 로컬 개발 환경 등 /api/analyze 없음
+  }
+}
+
 export function loadApiKey() {
   try { return localStorage.getItem(STORAGE_KEY) || ''; }
   catch { return ''; }
@@ -22,11 +42,13 @@ export default function SettingsModal({ open, onClose, onSave }) {
   const [key, setKey] = useState('');
   const [show, setShow] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [hasEdgeKey, setHasEdgeKey] = useState(false);
 
   useEffect(() => {
     if (open) {
       setKey(loadApiKey());
       setSaved(false);
+      checkEdgeFunction().then(setHasEdgeKey);
     }
   }, [open]);
 
@@ -86,20 +108,33 @@ export default function SettingsModal({ open, onClose, onSave }) {
           }}>✕</button>
         </div>
 
-        {/* Info box */}
-        <div style={{
-          background: 'var(--info-bg)', border: '0.5px solid var(--info-border)',
-          borderRadius: 'var(--radius-md)', padding: '10px 14px',
-          fontSize: '12px', color: 'var(--info-text)', marginBottom: '1.25rem',
-          lineHeight: 1.6,
-        }}>
-          <strong>API 키 없이도</strong> 규칙 기반 분석으로 모든 기능을 사용할 수 있습니다.<br />
-          AI 분석을 원하면 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer"
-            style={{ color: 'var(--info-text)', fontWeight: 600 }}>
-            console.anthropic.com
-          </a> 에서 API 키를 발급 받으세요.<br />
-          키는 이 브라우저의 localStorage에만 저장되며, 외부로 전송되지 않습니다.
-        </div>
+        {/* Info box — 서버 키 설정 여부에 따라 다른 안내 */}
+        {hasEdgeKey ? (
+          <div style={{
+            background: 'var(--success-bg, #f0fdf4)', border: '0.5px solid var(--success-border, #bbf7d0)',
+            borderRadius: 'var(--radius-md)', padding: '10px 14px',
+            fontSize: '12px', color: 'var(--success-text, #166534)', marginBottom: '1.25rem',
+            lineHeight: 1.6,
+          }}>
+            <strong>서버 API 키가 설정되어 있습니다.</strong><br />
+            Vercel 서버사이드에서 AI 분석이 실행되므로 브라우저에 별도 키를 입력하지 않아도 됩니다.<br />
+            개인 키를 추가 입력하면 서버 키 대신 사용됩니다.
+          </div>
+        ) : (
+          <div style={{
+            background: 'var(--info-bg)', border: '0.5px solid var(--info-border)',
+            borderRadius: 'var(--radius-md)', padding: '10px 14px',
+            fontSize: '12px', color: 'var(--info-text)', marginBottom: '1.25rem',
+            lineHeight: 1.6,
+          }}>
+            <strong>API 키 없이도</strong> 규칙 기반 분석으로 모든 기능을 사용할 수 있습니다.<br />
+            AI 분석을 원하면 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer"
+              style={{ color: 'var(--info-text)', fontWeight: 600 }}>
+              console.anthropic.com
+            </a> 에서 API 키를 발급 받으세요.<br />
+            키는 이 브라우저의 localStorage에만 저장되며, 외부로 전송되지 않습니다.
+          </div>
+        )}
 
         {/* Key input */}
         <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-secondary)' }}>

@@ -1,10 +1,12 @@
 import Button from '../ui/Button.jsx';
 import Badge from '../ui/Badge.jsx';
 import Card from '../ui/Card.jsx';
-import { TEMPLATES } from '../../data/templates.js';
+import { TEMPLATES, getTemplateUrl } from '../../data/templates.js';
+import { TYPE_LABEL } from '../../data/keywords.js';
 
-export default function Step4Templates({ ctype, onBack, onGenerate }) {
+export default function Step4Templates({ ctype, companion, onBack, onGenerate }) {
   const tmpl = TEMPLATES[ctype] || TEMPLATES.OTHER;
+  const companionTmpl = companion ? (TEMPLATES[companion] || []).filter(t => t.primary) : [];
 
   return (
     <div className="animate-in">
@@ -42,7 +44,7 @@ export default function Step4Templates({ ctype, onBack, onGenerate }) {
               borderRadius: 'var(--radius-md)',
               padding: '10px 12px',
             }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '7px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '7px' }}>
                 주요 확인 조항
               </div>
               <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -52,18 +54,61 @@ export default function Step4Templates({ ctype, onBack, onGenerate }) {
               </ul>
             </div>
 
-            {/* Link — replace '#' with actual SharePoint URL */}
-            {t.linkedPath !== '#' && (
-              <div style={{ marginTop: '10px' }}>
-                <a href={t.linkedPath} target="_blank" rel="noreferrer"
-                  style={{ fontSize: '12px', color: 'var(--info-text)', textDecoration: 'none' }}>
-                  파일 열기 →
-                </a>
-              </div>
-            )}
+            {/* 파일 링크 — VITE_TEMPLATE_BASE_URL 설정 시 활성화 */}
+            {(() => {
+              const url = getTemplateUrl(t.code);
+              return url ? (
+                <div style={{ marginTop: '10px' }}>
+                  <a href={url} target="_blank" rel="noreferrer"
+                    style={{ fontSize: '12px', color: 'var(--info-text)', textDecoration: 'none' }}>
+                    파일 열기 →
+                  </a>
+                </div>
+              ) : (
+                <div style={{ marginTop: '10px' }}>
+                  <span style={{
+                    fontSize: '12px', color: 'var(--text-tertiary)',
+                    cursor: 'default',
+                  }}>
+                    파일 링크 미설정
+                  </span>
+                </div>
+              );
+            })()}
           </Card>
         ))}
       </div>
+
+      {/* 복합 유형 병행 추천 */}
+      {companionTmpl.length > 0 && (
+        <div style={{ marginBottom: '1.25rem' }}>
+          <div style={{
+            fontSize: '12px', fontWeight: 600, color: 'var(--warn-text)',
+            padding: '8px 14px',
+            background: 'var(--warn-bg)', border: '0.5px solid var(--warn-border)',
+            borderRadius: 'var(--radius-md)', marginBottom: '10px',
+          }}>
+            병행 체결 권장 — {TYPE_LABEL[companion]}
+          </div>
+          {companionTmpl.map(t => (
+            <Card key={t.code} style={{ borderColor: 'var(--warn-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600 }}>{t.name}</div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <Badge variant="warn">병행 권장</Badge>
+                  <Badge variant="default">{t.tag}</Badge>
+                </div>
+              </div>
+              <p style={{ fontSize: '12px', margin: '0 0 8px', color: 'var(--text-secondary)' }}>{t.useGuide}</p>
+              <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                {t.cautions.slice(0, 2).map((c, i) => (
+                  <li key={i} style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{c}</li>
+                ))}
+              </ul>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
         <Button variant="outline" onClick={onBack}>← 뒤로</Button>

@@ -1,6 +1,20 @@
 // 계약 유형별 보완 질문 정의
-// type: 'radio' | 'text' | 'select'
+// type: 'radio' | 'text'
 // riskLevel: 'high' | 'medium' | 'low'
+
+// B-04: 긴급도 + 전달사항을 모든 유형 공통 마지막 항목으로 정의
+const COMMON_TAIL = [
+  {
+    id: 'urgency', label: '검토 긴급도', type: 'radio', required: false,
+    riskLevel: 'medium',
+    opts: ['긴급 (3일 이내)', '일반 (1주일 이내)', '여유 (2주 이상)'],
+  },
+  {
+    id: 'notes', label: '법무팀 전달 사항', type: 'text', required: false,
+    riskLevel: 'low',
+    ph: '특이사항, 주요 관심 조항 등 자유롭게 입력하세요.',
+  },
+];
 
 export const QUESTIONS = {
   NDA: [
@@ -31,6 +45,7 @@ export const QUESTIONS = {
       riskLevel: 'low',
       opts: ['서면 + 구두 포함', '서면만', '서면 + 구두 포함 (비밀 표시 필요)', '미정'],
     },
+    ...COMMON_TAIL,
   ],
 
   SUPPLY: [
@@ -60,6 +75,7 @@ export const QUESTIONS = {
       riskLevel: 'low',
       opts: ['납품 후 30일', '납품 후 60일', '선급', '협의', '미정'],
     },
+    ...COMMON_TAIL,
   ],
 
   SERVICE: [
@@ -89,6 +105,7 @@ export const QUESTIONS = {
       riskLevel: 'medium',
       opts: ['명시적 검수 기준 포함', '상호 협의', '미정'],
     },
+    ...COMMON_TAIL,
   ],
 
   JOINT_DEV: [
@@ -113,6 +130,7 @@ export const QUESTIONS = {
       riskLevel: 'medium',
       ph: '예: 2025년 6월 ~ 12월, 6개월',
     },
+    ...COMMON_TAIL,
   ],
 
   LICENSE: [
@@ -136,6 +154,7 @@ export const QUESTIONS = {
       riskLevel: 'medium',
       opts: ['포함', '불포함', '협의', '미정'],
     },
+    ...COMMON_TAIL,
   ],
 
   CONSIGNMENT: [
@@ -159,6 +178,7 @@ export const QUESTIONS = {
       riskLevel: 'low',
       opts: ['수탁자 부보 의무', '위탁자 부보', '협의', '미정'],
     },
+    ...COMMON_TAIL,
   ],
 
   OTHER: [
@@ -167,15 +187,6 @@ export const QUESTIONS = {
       riskLevel: 'high',
       ph: '계약의 주요 목적을 간략히 입력하세요.',
     },
-    {
-      id: 'urgency', label: '검토 긴급도', type: 'radio', required: true,
-      riskLevel: 'medium',
-      opts: ['긴급 (3일 이내)', '일반 (1주일 이내)', '여유 (2주 이상)'],
-    },
-    {
-      id: 'notes', label: '법무팀 전달 사항', type: 'text', required: false,
-      riskLevel: 'low',
-      ph: '특이사항, 주요 관심 조항 등 자유롭게 입력하세요.',
-    },
+    ...COMMON_TAIL,
   ],
 };
