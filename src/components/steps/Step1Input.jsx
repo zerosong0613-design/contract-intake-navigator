@@ -3,6 +3,27 @@ import Button from '../ui/Button.jsx';
 import Badge from '../ui/Badge.jsx';
 import { TYPE_LABEL, ALL_TYPES } from '../../data/keywords.js';
 
+// ── 외부 라이브러리 UMD 스크립트 로더 ────────────────────────────
+// dynamic import()는 jsdelivr ESM 번들에서 CORS/모듈 정책 문제가 발생하므로
+// <script> 태그 방식으로 UMD 번들을 로드하고 전역 변수를 사용합니다.
+function loadScript(src, globalKey) {
+  return new Promise((resolve, reject) => {
+    if (window[globalKey]) { resolve(window[globalKey]); return; }
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      // 이미 로딩 중인 경우 완료 대기
+      existing.addEventListener('load', () => resolve(window[globalKey]));
+      existing.addEventListener('error', () => reject(new Error(`스크립트 로드 실패: ${src}`)));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload  = () => resolve(window[globalKey]);
+    script.onerror = () => reject(new Error(`스크립트 로드 실패: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
 export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI, analyzing, error }) {
   const [tab, setTab] = useState('free');
   const [dragOver, setDragOver] = useState(false);
@@ -16,31 +37,49 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
   const extractText = async (file) => {
     setFileLoading(true); setFileError('');
     try {
+      // TXT
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
         return await file.text();
       }
-      if (file.name.endsWith('.docx') || file.type.includes('wordprocessingml')) {
-        // CDN 브라우저 번들은 default export가 없고 모듈 자체가 API 객체
-        const mammothModule = await import('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
-        const mammoth = mammothModule.default ?? mammothModule;
+
+      // DOCX — mammoth UMD 번들 (전역 window.mammoth)
+      if (file.name.endsWith('.docx') || file.name.endsWith('.doc') || file.type.includes('wordprocessingml')) {
+        const mammoth = await loadScript(
+          'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js',
+          'mammoth'
+        );
         if (typeof mammoth?.extractRawText !== 'function') {
-          throw new Error('mammoth 라이브러리 로드 실패. 잠시 후 다시 시도해 주세요.');
+          throw new Error('mammoth 라이브러리 로드에 실패했습니다. 새로고침 후 다시 시도해 주세요.');
         }
         const { value: text } = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+        if (!text?.trim()) throw new Error('문서에서 텍스트를 추출하지 못했습니다. 텍스트가 포함된 DOCX 파일인지 확인해 주세요.');
         return text;
       }
+
+      // PDF — pdfjs UMD 번들 (전역 window.pdfjsLib)
       if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-        const pdfjsModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.mjs');
-        const pdfjsLib = pdfjsModule.default ?? pdfjsModule;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.mjs';
+        const pdfjsLib = await loadScript(
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+          'pdfjsLib'
+        );
+        if (!pdfjsLib?.getDocument) {
+          throw new Error('PDF 라이브러리 로드에 실패했습니다. 새로고침 후 다시 시도해 주세요.');
+        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
         const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
         const pages = await Promise.all(
           Array.from({ length: doc.numPages }, (_, i) =>
-            doc.getPage(i + 1).then(p => p.getTextContent()).then(c => c.items.map(s => s.str).join(' '))
+            doc.getPage(i + 1)
+              .then(p => p.getTextContent())
+              .then(c => c.items.map(s => s.str).join(' '))
           )
         );
-        return pages.join('\n');
+        const text = pages.join('\n');
+        if (!text?.trim()) throw new Error('PDF에서 텍스트를 추출하지 못했습니다. 스캔 이미지 PDF는 지원되지 않습니다.');
+        return text;
       }
+
       throw new Error('지원하지 않는 파일 형식입니다. (TXT / DOCX / PDF)');
     } catch (e) {
       setFileError(e.message || '파일 읽기 실패');
