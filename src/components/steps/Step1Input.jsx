@@ -42,8 +42,15 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
         return await file.text();
       }
 
+      // DOC (Word 97-2003 바이너리) — mammoth가 지원하지 않음, 변환 안내
+      if (file.name.endsWith('.doc') || file.type === 'application/msword') {
+        throw new Error(
+          '.doc 형식은 지원되지 않습니다. Word에서 [다른 이름으로 저장 → .docx]로 변환 후 업로드해 주세요.'
+        );
+      }
+
       // DOCX — mammoth UMD 번들 (전역 window.mammoth)
-      if (file.name.endsWith('.docx') || file.name.endsWith('.doc') || file.type.includes('wordprocessingml')) {
+      if (file.name.endsWith('.docx') || file.type.includes('wordprocessingml')) {
         const mammoth = await loadScript(
           'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js',
           'mammoth'
@@ -145,7 +152,7 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
           }}
         >
           <input
-            ref={fileRef} type="file" accept=".txt,.docx,.pdf"
+            ref={fileRef} type="file" accept=".txt,.docx,.doc,.pdf"
             style={{ display: 'none' }}
             onChange={e => handleFile(e.target.files[0])}
           />
@@ -161,7 +168,7 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
                 파일을 드래그하거나 클릭해서 선택
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                TXT · DOCX · PDF 지원
+                TXT · DOCX · PDF 지원 &nbsp;·&nbsp; DOC는 DOCX로 변환 필요
               </div>
             </>
           )}
@@ -204,6 +211,15 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
       {(error || fileError) && (
         <div style={{ marginTop: '8px' }}>
           <Badge variant="warn">{error || fileError}</Badge>
+          {fileError?.includes('.doc 형식') && (
+            <div style={{
+              marginTop: '6px', fontSize: '12px',
+              color: 'var(--text-secondary)', lineHeight: 1.6,
+              paddingLeft: '4px',
+            }}>
+              💡 Word에서 <strong>파일 → 다른 이름으로 저장 → 파일 형식: .docx</strong> 로 변환 후 다시 업로드해 주세요.
+            </div>
+          )}
         </div>
       )}
 

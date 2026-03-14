@@ -183,15 +183,12 @@ export default function App() {
             <Step4Templates
               ctype={ctype} companion={companion}
               onBack={() => setStep(3)}
-              onGenerate={() => {
-                setReqText(generateRequest({ type: ctype, inputText, ext, answers }));
-                setStep(5);
-              }}
+              onGenerate={() => setStep(5)}
             />
           )}
           {step === 5 && (
             <Step5Request
-              reqText={reqText} ctype={ctype} inputText={inputText}
+              ctype={ctype} inputText={inputText}
               ext={ext} answers={answers}
               onBack={() => setStep(4)} onReset={handleReset}
             />
