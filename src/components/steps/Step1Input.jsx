@@ -20,12 +20,18 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
         return await file.text();
       }
       if (file.name.endsWith('.docx') || file.type.includes('wordprocessingml')) {
-        const mammoth = await import('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
-        const { value: text } = await mammoth.default.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+        // CDN 브라우저 번들은 default export가 없고 모듈 자체가 API 객체
+        const mammothModule = await import('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
+        const mammoth = mammothModule.default ?? mammothModule;
+        if (typeof mammoth?.extractRawText !== 'function') {
+          throw new Error('mammoth 라이브러리 로드 실패. 잠시 후 다시 시도해 주세요.');
+        }
+        const { value: text } = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
         return text;
       }
       if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-        const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.mjs');
+        const pdfjsModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.mjs');
+        const pdfjsLib = pdfjsModule.default ?? pdfjsModule;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.mjs';
         const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
         const pages = await Promise.all(
