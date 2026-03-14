@@ -66,13 +66,12 @@ export default function Step3Questions({ ctype, companion, answers, onAnswer, on
 
               {q.help && <p style={{ fontSize: '12px', marginBottom: '10px', marginTop: '0', color: 'var(--text-secondary)' }}>{q.help}</p>}
 
-              {/* 라디오: Grid 레이아웃, 줄바꿈 허용, minHeight 보장 */}
               {q.type === 'radio' && (
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: q.opts.length <= 2
                     ? `repeat(${q.opts.length}, 1fr)`
-                    : 'repeat(auto-fill, minmax(140px, 1fr))',
+                    : 'repeat(auto-fill, minmax(min(160px, 100%), 1fr))',
                   gap: '6px',
                 }}>
                   {q.opts.map(opt => {
@@ -84,12 +83,14 @@ export default function Step3Questions({ ctype, companion, answers, onAnswer, on
                         aria-checked={selected}
                         onClick={() => onAnswer(q.id, opt)}
                         style={{
-                          padding: '7px 12px',
+                          padding: '8px 12px',
                           borderRadius: 'var(--radius-md)',
                           fontSize: '12px', fontWeight: 500,
                           cursor: 'pointer', textAlign: 'left',
-                          whiteSpace: 'normal', lineHeight: 1.4,
+                          whiteSpace: 'normal', lineHeight: 1.5,
                           minHeight: '36px',
+                          wordBreak: 'keep-all',
+                          overflowWrap: 'break-word',
                           border: '0.5px solid',
                           borderColor: selected ? 'transparent' : 'var(--border-medium)',
                           background: selected ? 'var(--accent)' : 'transparent',

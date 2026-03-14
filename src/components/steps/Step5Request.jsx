@@ -5,7 +5,7 @@ import { generateRequest, generateInfoPanel, generateStructuredData } from '../.
 import { TYPE_LABEL } from '../../data/keywords.js';
 
 export default function Step5Request({ ctype, inputText, ext, answers, urgency, onBack, onReset }) {
-  const info = generateInfoPanel({ type: ctype, ext, answers, urgency });
+  const info        = generateInfoPanel({ type: ctype, ext, answers, urgency });
   const initialText = generateRequest({ type: ctype, ext, answers, urgency });
 
   const [editMode, setEditMode]     = useState(false);
@@ -56,7 +56,7 @@ export default function Step5Request({ ctype, inputText, ext, answers, urgency, 
         </p>
       </div>
 
-      {/* 기본정보 패널 — 법무시스템 입력용, 복사 영역 아님 */}
+      {/* ── 기본정보 패널 — 법무시스템 5개 항목만 ── */}
       <div style={{
         background: 'var(--bg-muted)',
         border: '0.5px solid var(--border-default)',
@@ -64,51 +64,48 @@ export default function Step5Request({ ctype, inputText, ext, answers, urgency, 
         padding: '16px',
         marginBottom: '1.25rem',
       }}>
+        {/* 레이블 */}
         <div style={{
           fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em',
-          color: 'var(--text-tertiary)', marginBottom: '12px', textTransform: 'uppercase',
+          color: 'var(--text-tertiary)', marginBottom: '14px', textTransform: 'uppercase',
         }}>
-          기본정보 — 법무시스템 직접 입력용
+          기본정보 — 법무시스템 직접 입력용 (복사 영역 아님)
         </div>
 
-        {/* 배지 행 */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+        {/* 유형 + 긴급도 배지 */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
           <Badge variant="default">{info.label}</Badge>
           <Badge variant={
-            info.urgencyLabel === '긴급' ? 'danger' :
-            info.urgencyLabel === '일반' ? 'success' : 'default'
+            info.urgencyLabel.includes('긴급') ? 'danger' :
+            info.urgencyLabel.includes('일반') ? 'success' : 'default'
           }>
             긴급도: {info.urgencyLabel}
           </Badge>
-          {info.risks.map((r, i) => <Badge key={i} variant="warn">{r}</Badge>)}
         </div>
 
-        {/* 확인된 항목 그리드 */}
-        {info.confirmed.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '6px 16px',
-            marginBottom: info.missing.length > 0 ? '10px' : 0,
-          }}>
-            {info.confirmed.map((item, i) => (
-              <div key={i} style={{ fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-tertiary)', marginRight: '4px' }}>{item.label}</span>
-                <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{item.value}</span>
+        {/* 5개 핵심 필드 — 2열 그리드 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: '10px 24px',
+        }}>
+          {info.fields.map((f, i) => (
+            <div key={i}>
+              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '2px' }}>
+                {f.label}
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* 미확인 항목 */}
-        {info.missing.length > 0 && (
-          <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-            미확인: {info.missing.join(' · ')}
-          </div>
-        )}
+              <div style={{
+                fontSize: '13px', fontWeight: 600,
+                color: f.value === '미정' ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              }}>
+                {f.value}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* 복사용 요청서 영역 */}
+      {/* ── 복사용 요청서 영역 ── */}
       <div style={{
         border: '1.5px solid var(--border-medium)',
         borderRadius: 'var(--radius-lg)',
@@ -124,7 +121,7 @@ export default function Step5Request({ ctype, inputText, ext, answers, urgency, 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '13px', fontWeight: 600 }}>복사할 요청서 내용</span>
-            <Badge variant="info">계약 배경 + 검토 요청사항</Badge>
+            <Badge variant="info">계약 배경 · 기본내용 · 검토 요청사항</Badge>
             {isEdited && <Badge variant="warn">수정됨</Badge>}
           </div>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -165,7 +162,7 @@ export default function Step5Request({ ctype, inputText, ext, answers, urgency, 
             value={editedText}
             onChange={e => setEditedText(e.target.value)}
             style={{
-              width: '100%', minHeight: '420px', padding: '16px',
+              width: '100%', minHeight: '520px', padding: '16px',
               border: 'none', outline: 'none',
               fontSize: '13px', lineHeight: 1.8,
               background: 'var(--bg-surface)', color: 'var(--text-primary)',
@@ -175,7 +172,7 @@ export default function Step5Request({ ctype, inputText, ext, answers, urgency, 
           />
         ) : (
           <div style={{
-            padding: '16px', minHeight: '420px',
+            padding: '16px', minHeight: '520px',
             fontSize: '13px', lineHeight: 1.9,
             background: 'var(--bg-surface)', color: 'var(--text-primary)',
             fontFamily: "'JetBrains Mono', monospace",
@@ -186,15 +183,18 @@ export default function Step5Request({ ctype, inputText, ext, answers, urgency, 
               const isTopLine       = i === 0;
               const isDivider       = /^┈+$/.test(line.trim());
               const isWarning       = line.startsWith('⚠');
+              const isRisk          = line.startsWith('[리스크');
               const isNumbered      = /^\d+\./.test(line.trim());
               return (
                 <div key={i} style={{
                   fontWeight: isSectionHeader || isTopLine ? 700 : isNumbered ? 500 : 400,
                   color: isWarning ? 'var(--warn-text)'
-                       : isDivider ? 'var(--border-strong)'
+                       : isRisk    ? 'var(--danger-text)'
+                       : isDivider ? 'var(--text-tertiary)'
                        : 'inherit',
-                  marginTop:    isSectionHeader ? '8px' : 0,
-                  marginBottom: isSectionHeader ? '2px' : 0,
+                  marginTop:    isSectionHeader ? '10px' : 0,
+                  marginBottom: isSectionHeader ? '4px'  : 0,
+                  paddingLeft:  isSectionHeader ? 0 : undefined,
                 }}>
                   {line || '\u00A0'}
                 </div>

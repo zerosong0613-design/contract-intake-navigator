@@ -31,6 +31,33 @@ export function extractContractInfo(text) {
     info.damages = cap ? cap[0].trim().slice(0, 60) : '손해배상 조항 있음 (상한 미확인)';
   }
 
+  // 계약금액
+  const amountPatterns = [
+    // 한국어: 금 XXX원, 계약금액 XXX원, 총 금액 XXX
+    /(?:계약\s*금액|총\s*금액|대금|금\s*액)\s*[:：]?\s*([\d,]+\s*(?:원|만원|억원|천만원))/,
+    // 숫자+단위 직접 표기
+    /([\d,]+\s*(?:억|천만|백만|만)\s*원)/,
+    // 영문: USD/KRW + 숫자
+    /(?:USD|KRW|EUR|JPY)\s*([\d,]+(?:\.\d+)?)/i,
+    // 금 + 숫자 + 원
+    /금\s*([\d,]+)\s*원/,
+  ];
+  for (const pattern of amountPatterns) {
+    const m = text.match(pattern);
+    if (m) { info.contractAmount = m[0].trim(); break; }
+  }
+
+  // 국문/영문 감지 — 한글 문자 비율로 판단
+  const koreanChars  = (text.match(/[가-힣]/g) || []).length;
+  const englishChars = (text.match(/[a-zA-Z]/g) || []).length;
+  const total = koreanChars + englishChars;
+  if (total > 0) {
+    const korRatio = koreanChars / total;
+    if (korRatio >= 0.6)       info.language = '국문';
+    else if (korRatio <= 0.2)  info.language = '영문';
+    else                       info.language = '국문/영문 혼용';
+  }
+
   // 리스크 플래그
   const lo = text.toLowerCase();
   info.hasOverseas  = /해외|외국|international|overseas|foreign|해외법인|외국법인/.test(lo);
@@ -48,13 +75,15 @@ export function extractContractInfo(text) {
  */
 export function parseAIResult(parsed) {
   return {
-    counterparty:  parsed.counterparty  || null,
-    period:        parsed.period        || null,
-    governingLaw:  parsed.governingLaw  || null,
-    damages:       parsed.damages       || null,
-    hasOverseas:   !!parsed.hasOverseas,
-    hasPersonal:   !!parsed.hasPersonal,
-    hasTech:       !!parsed.hasTech,
-    hasLiability:  !!parsed.hasLiability,
+    counterparty:    parsed.counterparty    || null,
+    period:          parsed.period          || null,
+    governingLaw:    parsed.governingLaw    || null,
+    damages:         parsed.damages         || null,
+    contractAmount:  parsed.contractAmount  || null,
+    language:        parsed.language        || null,
+    hasOverseas:     !!parsed.hasOverseas,
+    hasPersonal:     !!parsed.hasPersonal,
+    hasTech:         !!parsed.hasTech,
+    hasLiability:    !!parsed.hasLiability,
   };
 }

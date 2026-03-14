@@ -208,6 +208,27 @@ export default function Step1Input({ value, onChange, onAnalyze, onManual, useAI
         </div>
       )}
 
+      {/* 글자 수 카운터 + 분석 품질 힌트 */}
+      {tab !== 'upload' && value.length > 0 && (() => {
+        const len = value.trim().length;
+        const hint =
+          len < 30  ? { label: '더 입력하면 분석 정확도가 높아집니다', color: 'var(--warn-text)' } :
+          len < 100 ? { label: '기본 분석 가능', color: 'var(--text-tertiary)' } :
+          len < 300 ? { label: '양호 — 주요 조항 추출 가능', color: 'var(--success-text)' } :
+                      { label: '최적 — 상세 분석 가능', color: 'var(--success-text)' };
+        return (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            marginTop: '6px', padding: '0 2px',
+          }}>
+            <span style={{ fontSize: '12px', color: hint.color }}>{hint.label}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums' }}>
+              {len.toLocaleString()}자
+            </span>
+          </div>
+        );
+      })()}
+
       {(error || fileError) && (
         <div style={{ marginTop: '8px' }}>
           <Badge variant="warn">{error || fileError}</Badge>

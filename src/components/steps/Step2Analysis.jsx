@@ -8,10 +8,12 @@ export default function Step2Analysis({ ctype, secondary, companion, ext, usedAI
   const [typeOpen, setTypeOpen] = useState(false);  // accordion 상태
 
   const INFO_ROWS = [
-    ['counterparty', '상대방'],
-    ['period',       '계약 기간'],
-    ['governingLaw', '준거법'],
-    ['damages',      '손해배상'],
+    ['counterparty',    '상대방'],
+    ['period',          '계약 기간'],
+    ['contractAmount',  '계약금액'],
+    ['language',        '국문/영문'],
+    ['governingLaw',    '준거법'],
+    ['damages',         '손해배상'],
   ];
 
   const flags = [
